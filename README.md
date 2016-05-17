@@ -12,15 +12,15 @@
 ## Code details (The WHY)
 There are three Java classes
 
-1. Activity
+###Activity
 
 This displays and handles the events on the UI with EditText, Button and ImageView. 
 
-2. Service 
+###Service 
 
 Images are loaded in an Android Service. Service gets a URL for the image and starts an AsycTask to download the image. Once the download is finished service broadcasts the message to the Activity.
 
-3. ImageUtil
+###ImageUtil
 
 This class is used to store and read the image from the device.
 
