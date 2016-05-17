@@ -45,17 +45,26 @@ public class MainActivity extends AppCompatActivity implements ImageUtil.OnImage
         imageUrlView.setAdapter(urlAdapter);
         imageUrlView.setImeActionLabel("Download", KeyEvent.KEYCODE_ENTER);
         setTitle("Load image");
-
+        findViewById(R.id.go).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!imageUrlView.getText().toString().equals("")) {
+                    loadImage(imageUrlView.getText().toString());
+                } else {
+                    Toast.makeText(MainActivity.this, "Please enter a URL", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
         imageUrlView.setOnEditorActionListener(this);
     }
 
-    private void loadImage() {
-        urlAdapter.insert(imageUrlView.getText().toString(), 0);
-        addHistory(this, imageUrlView.getText().toString());
+    private void loadImage(String url) {
+        urlAdapter.insert(url, 0);
+        addHistory(this, url);
         imageUrlView.dismissDropDown();
         progressBar.setVisibility(View.VISIBLE);
         Intent intent = new Intent(this, ImageLoaderService.class);
-        intent.putExtra("url", imageUrlView.getText().toString());
+        intent.putExtra("url", url);
         startService(intent);
         dismissKeyBoard();
     }
@@ -149,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements ImageUtil.OnImage
         if (actionId == EditorInfo.IME_NULL
                 && event.getAction() == KeyEvent.ACTION_DOWN) {
             if (!imageUrlView.getText().toString().equals("")) {
-                loadImage();
+                loadImage(imageUrlView.getText().toString());
                 return true;
             } else {
                 Toast.makeText(MainActivity.this, "Please enter a URL", Toast.LENGTH_SHORT).show();
