@@ -17,7 +17,7 @@ import java.net.URL;
 /**
  * Created by vipulmittal on 17/05/16.
  */
-public class ImageLoader extends Service implements ImageUtil.OnBitmapSaveListener {
+public class ImageLoaderService extends Service implements ImageUtil.OnBitmapSaveListener {
     public static final String DOWNLOAD_COMPLETE = "Download_complete";
     public static final String DOWNLOAD_PROGRESS = "Download_progress";
     public static final String DOWNLOAD_ERROR = "Download_error";
@@ -49,7 +49,7 @@ public class ImageLoader extends Service implements ImageUtil.OnBitmapSaveListen
     public void download(final String imageUrl) {
         Bitmap imageData = cache.get(imageUrl);
         if (imageData != null) {
-            ImageUtil.writeToDisk(imageData, ImageLoader.this, Bitmap.CompressFormat.JPEG);
+            ImageUtil.writeToDisk(imageData, ImageLoaderService.this, Bitmap.CompressFormat.JPEG);
             return;
         }
         new AsyncTask<Void, Integer, Bitmap>() {
@@ -132,7 +132,7 @@ public class ImageLoader extends Service implements ImageUtil.OnBitmapSaveListen
                     sendBroadcast(intent);
                 } else {
                     cache.put(imageUrl, result);
-                    ImageUtil.writeToDisk(result, ImageLoader.this, Bitmap.CompressFormat.JPEG);
+                    ImageUtil.writeToDisk(result, ImageLoaderService.this, Bitmap.CompressFormat.JPEG);
                 }
             }
         }.execute();

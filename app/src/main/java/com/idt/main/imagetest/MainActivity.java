@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements ImageUtil.OnImage
         addHistory(this, imageUrlView.getText().toString());
         imageUrlView.dismissDropDown();
         progressBar.setVisibility(View.VISIBLE);
-        Intent intent = new Intent(this, ImageLoader.class);
+        Intent intent = new Intent(this, ImageLoaderService.class);
         intent.putExtra("url", imageUrlView.getText().toString());
         startService(intent);
         dismissKeyBoard();
@@ -64,9 +64,9 @@ public class MainActivity extends AppCompatActivity implements ImageUtil.OnImage
     protected void onResume() {
         super.onResume();
         IntentFilter filter = new IntentFilter();
-        filter.addAction(ImageLoader.DOWNLOAD_COMPLETE);
-        filter.addAction(ImageLoader.DOWNLOAD_PROGRESS);
-        filter.addAction(ImageLoader.DOWNLOAD_ERROR);
+        filter.addAction(ImageLoaderService.DOWNLOAD_COMPLETE);
+        filter.addAction(ImageLoaderService.DOWNLOAD_PROGRESS);
+        filter.addAction(ImageLoaderService.DOWNLOAD_ERROR);
         registerReceiver(receiver, filter);
     }
 
@@ -80,15 +80,15 @@ public class MainActivity extends AppCompatActivity implements ImageUtil.OnImage
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
-                case ImageLoader.DOWNLOAD_COMPLETE:
+                case ImageLoaderService.DOWNLOAD_COMPLETE:
                     String imageUrl = intent.getStringExtra("imageData");
                     progressBar.setVisibility(View.INVISIBLE);
                     ImageUtil.readFromDiskAsync(imageUrl, MainActivity.this);
                     break;
-                case ImageLoader.DOWNLOAD_PROGRESS:
+                case ImageLoaderService.DOWNLOAD_PROGRESS:
                     progressBar.setProgress(intent.getIntExtra("progress", 0));
                     break;
-                case ImageLoader.DOWNLOAD_ERROR:
+                case ImageLoaderService.DOWNLOAD_ERROR:
                     progressBar.setVisibility(View.INVISIBLE);
                     Toast.makeText(MainActivity.this, intent.getStringExtra("error"), Toast.LENGTH_SHORT).show();
                     break;
@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements ImageUtil.OnImage
 
     @Override
     protected void onDestroy() {
-        stopService(new Intent(this, ImageLoader.class));
+        stopService(new Intent(this, ImageLoaderService.class));
         super.onDestroy();
     }
 

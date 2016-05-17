@@ -21,7 +21,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".ImageLoader"></service>
+        <service android:name=".ImageLoaderService"></service>
     </application>
 
 </manifest>
