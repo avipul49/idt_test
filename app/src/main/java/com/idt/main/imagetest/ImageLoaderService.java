@@ -57,7 +57,7 @@ public class ImageLoaderService extends Service implements ImageUtil.OnBitmapSav
             return;
         }
         new AsyncTask<Void, Integer, Bitmap>() {
-            DownloadError error;
+            String error;
 
             @Override
             protected void onPreExecute() {
@@ -67,7 +67,7 @@ public class ImageLoaderService extends Service implements ImageUtil.OnBitmapSav
             @Override
             protected void onCancelled() {
                 inProgress = false;
-                sendError(error.getMessage(), true);
+                sendError(error, true);
             }
 
             @Override
@@ -89,8 +89,7 @@ public class ImageLoaderService extends Service implements ImageUtil.OnBitmapSav
                     connection.connect();
                     final int length = connection.getContentLength();
                     if (length <= 0) {
-                        error = new DownloadError("Invalid content length. The URL is probably not pointing to a file")
-                                .setErrorCode(DownloadError.ERROR_INVALID_FILE);
+                        error = "Invalid content length. The URL is probably not pointing to a file";
                         this.cancel(true);
                     }
                     is = new BufferedInputStream(connection.getInputStream(), 8192);
@@ -106,7 +105,7 @@ public class ImageLoaderService extends Service implements ImageUtil.OnBitmapSav
                     bitmap = BitmapFactory.decodeByteArray(out.toByteArray(), 0, out.size());
                 } catch (Throwable e) {
                     if (!this.isCancelled()) {
-                        error = new DownloadError(e).setErrorCode(DownloadError.ERROR_GENERAL_EXCEPTION);
+                        error = e.getMessage();
                         this.cancel(true);
                     }
                 } finally {
@@ -155,31 +154,6 @@ public class ImageLoaderService extends Service implements ImageUtil.OnBitmapSav
     @Override
     public void onBitmapSaveError(ImageUtil.DiscError error) {
         sendError(error.getMessage(), true);
-    }
-
-    public static final class DownloadError extends Throwable {
-
-        private int errorCode;
-        public static final int ERROR_GENERAL_EXCEPTION = -1;
-        public static final int ERROR_INVALID_FILE = 0;
-
-        public DownloadError(String message) {
-            super(message);
-        }
-
-        public DownloadError(Throwable error) {
-            super(error.getMessage(), error.getCause());
-            this.setStackTrace(error.getStackTrace());
-        }
-
-        public DownloadError setErrorCode(int code) {
-            this.errorCode = code;
-            return this;
-        }
-
-        public int getErrorCode() {
-            return errorCode;
-        }
     }
 
     private void sendError(String msg, boolean dismissProgressBar) {
