@@ -98,7 +98,9 @@ public class MainActivity extends AppCompatActivity implements ImageUtil.OnImage
                     progressBar.setProgress(intent.getIntExtra("progress", 0));
                     break;
                 case ImageLoaderService.DOWNLOAD_ERROR:
-                    progressBar.setVisibility(View.INVISIBLE);
+                    if (intent.getBooleanExtra("dismissProgressBar", true)) {
+                        progressBar.setVisibility(View.INVISIBLE);
+                    }
                     Toast.makeText(MainActivity.this, intent.getStringExtra("error"), Toast.LENGTH_SHORT).show();
                     break;
             }

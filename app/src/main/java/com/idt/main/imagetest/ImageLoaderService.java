@@ -23,6 +23,7 @@ public class ImageLoaderService extends Service implements ImageUtil.OnBitmapSav
     public static final String DOWNLOAD_ERROR = "Download_error";
 
     private LruCache<String, Bitmap> cache;
+    private boolean inProgress;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -40,8 +41,11 @@ public class ImageLoaderService extends Service implements ImageUtil.OnBitmapSav
                 };
             }
             String url = intent.getStringExtra("url");
-            if (url != null)
+            if (inProgress) {
+                sendError("Download in progress.", false);
+            } else if (url != null) {
                 download(url);
+            }
         }
         return super.onStartCommand(intent, flags, startId);
     }
@@ -57,14 +61,13 @@ public class ImageLoaderService extends Service implements ImageUtil.OnBitmapSav
 
             @Override
             protected void onPreExecute() {
+                inProgress = true;
             }
 
             @Override
             protected void onCancelled() {
-                Intent intent = new Intent();
-                intent.setAction(DOWNLOAD_ERROR);
-                intent.putExtra("error", error.getMessage());
-                sendBroadcast(intent);
+                inProgress = false;
+                sendError(error.getMessage(), true);
             }
 
             @Override
@@ -125,11 +128,9 @@ public class ImageLoaderService extends Service implements ImageUtil.OnBitmapSav
 
             @Override
             protected void onPostExecute(Bitmap result) {
+                inProgress = false;
                 if (result == null) {
-                    Intent intent = new Intent();
-                    intent.setAction(DOWNLOAD_ERROR);
-                    intent.putExtra("error", "Downloaded file could not be decoded as bitmap");
-                    sendBroadcast(intent);
+                    sendError("Downloaded file could not be decoded as bitmap", true);
                 } else {
                     cache.put(imageUrl, result);
                     ImageUtil.writeToDisk(result, ImageLoaderService.this, Bitmap.CompressFormat.JPEG);
@@ -153,10 +154,7 @@ public class ImageLoaderService extends Service implements ImageUtil.OnBitmapSav
 
     @Override
     public void onBitmapSaveError(ImageUtil.DiscError error) {
-        Intent intent = new Intent();
-        intent.setAction(DOWNLOAD_ERROR);
-        intent.putExtra("error", error.getMessage());
-        sendBroadcast(intent);
+        sendError(error.getMessage(), true);
     }
 
     public static final class DownloadError extends Throwable {
@@ -184,4 +182,11 @@ public class ImageLoaderService extends Service implements ImageUtil.OnBitmapSav
         }
     }
 
+    private void sendError(String msg, boolean dismissProgressBar) {
+        Intent intent = new Intent();
+        intent.setAction(DOWNLOAD_ERROR);
+        intent.putExtra("error", msg);
+        intent.putExtra("dismissProgressBar", dismissProgressBar);
+        sendBroadcast(intent);
+    }
 }
